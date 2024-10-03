@@ -123,9 +123,8 @@ Returns:
 function lu_partial_pivoting(A)
     n = size(A,1);
     L = Matrix{Float64}(I,n,n);
-    U = Matrix{Float64}(undef,n,n);
-
-    p = Vector{Float64}(undef, n);
+    p = Vector{Int}(undef, n);
+    U = copy(A);
     
     for i=1:n
         p[i] = i;
@@ -134,58 +133,61 @@ function lu_partial_pivoting(A)
     for k = 1:n-1
         #find pivot in each column
         pivot = k;
-        col_max = abs(A[k,k]);
+        col_max = abs(U[k,k]);
                 
         for i = k+1:n
 
-            if abs(A[i,k]) >= col_max
-                col_max = abs(A[i,k]);
+            if abs(U[i,k]) >= col_max
+                col_max = abs(U[i,k]);
                 pivot = i;
             end
 
         end
 
-        p[k], p[pivot] = p[pivot], p[k];
-
-        # println(string(col_max));
-
 
         #exchanging rows
         if pivot != k
 
-            for i = 1:n
-                A[pivot, i], A[k,i] = A[k,i], A[pivot, i];
-                L[pivot, i], L[k,i] = L[k,i], L[pivot, i];
+            # for i = 1:n
+            #     U[pivot, i], U[k,i] = U[k,i], U[pivot, i];
+            # end
+            U[[pivot,k], 1:n] = U[[k, pivot], 1:n];
+
+            p[k], p[pivot] = p[pivot], p[k];
+
+
+            if k >= 2
+                # for i = 1:k-1
+                    # L[k, i] , L[pivot, i] = L[pivot, i] , L[k, i];
+                # end
+
+                # L[[k,pivot]: 1:k-1] = L[[pivot,k], 1:k-1];
+                L[[k, pivot], 1:k-1] = L[[pivot, k], 1:k-1];
+
             end
+
         end
-
-        # println(string(A));
-
 
         #applying normal GE
 
 
         for i = k+1:n 
 
-            m_ik = A[i,k]/A[k,k];
+            m_ik = U[i,k]/U[k,k];
             L[i,k] = m_ik;
-            A[i,k] = 0.0;
             
             for j=k+1:n
-                A[i,j] -=  m_ik*A[k,j];
+                U[i,j] -=  m_ik*U[k,j];
             end
+            U[i,k] = 0.0;
 
         end
         
 
     end
 
-    U = A;
-    # println(string(A));
-
-    return L, U, p;
-
-
+    return L, U, p; 
+ 
 end
 
 
@@ -201,5 +203,17 @@ Output:
     x: solution to A*x = b (recall that A[p, :] = L*U)
 """
 function lu_solve(L, U, p, b)
-    return x
+    
+    n = size(L,1);
+    b_prime = Vector{Float64}(undef, n);
+
+    for i = 1:n
+        b_prime[i] = b[p[i]];
+    end
+
+    z = forward_substitution(L,b_prime);
+
+    x = backward_substitution(U,z);
+
+    return x;
 end
