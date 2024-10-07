@@ -25,7 +25,7 @@ function backward_substitution(U, b)
 
     for k in n-1:-1:1
         my_sum = 0;
-        for i in n:-1:k
+        for i in n:-1:k+1
             my_sum += U[k,i]*x[i];
 
         end
@@ -86,8 +86,6 @@ function gaussian_elimination(A, b)
     for k in 1:n-1
         for i in k+1:n
 
-            if Aout[i,k] < eps(Aout[i,k])
-            end
 
             m_ik = Aout[i,k]/Aout[k,k];
             
