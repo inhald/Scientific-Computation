@@ -18,13 +18,37 @@ Outputs:
           errs[1] contains norm(x0 - x_true)).
     bounds: upper bound on errs computed using the convergence theory discussed in lecture. 
 """
-function jacobi_method(A, b, x0, k_max)
+function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 
 	n = size(A,1);
 	x = Vector{Float64}(undef,n);
+	errs = Float64[];
 	x_prev = copy(x0);
+
+	iter = 0;
 	
-	for k = 1:k_max
+
+	bounds = Float64[];
+	M = Matrix{Float64}(I,n,n);
+
+	#finding G matrix
+	
+	for i = 1:n
+		M[i,i] = A[i,i];
+	end
+
+	N = M - A;  
+
+	G = M\N;
+
+	
+	push!(bounds, norm(x_prev-x_true));
+
+	
+	while iter <= k_max && norm(A*x-b) >= res_tol
+
+		push!(errs, norm(x_prev - x_true));
+
 		for i = 1:n
 			sum_aij_xj = 0; 
 
@@ -40,10 +64,14 @@ function jacobi_method(A, b, x0, k_max)
 
 		x_prev = copy(x);
 
+		iter+=1; 
+
+		push!(bounds, G*bounds[iter]);
+
 	end
 
 
-    	return x;
+    	return x, errs, bounds; 
 end
 
 
@@ -137,10 +165,6 @@ function ldl_decomposition(A)
 
 
 	end
- 
-
-	return L, d;
-
 
 
 end
@@ -157,7 +181,14 @@ x0 = zeros(3)
 k_max = 25
 
 # Solve using the corrected Jacobi method
-x = jacobi_method(A, b, x0, k_max)
+x, err, bounds = jacobi_method(A, b, x0, A\b,  k_max, 1e-6);
+
+iter = 0; 
+
+iter+=1; 
+
+#println(iter);
+
 
 println("Solution x: ", x)
 

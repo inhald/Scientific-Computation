@@ -137,18 +137,41 @@ Outputs:
     bounds: upper bound on errs computed using the convergence theory discussed in lecture. 
 """
 function jacobi_method(A, b, x0, x_true, k_max, res_tol)
+
+
 	n = size(A,1);
-        x = copy(x0);
+        x = Vector{Float64}(undef,n);
+        errs = Float64[];
         x_prev = copy(x0);
 
-        for k = 1:k_max
+        iter = 0;
+
+
+        bounds = Float64[];
+        M = Matrix{Float64}(I,n,n);
+
+        #finding G matrix
+
+        for i = 1:n
+                M[i,i] = A[i,i];
+        end
+
+        N = M - A;
+
+        G = M\N;
+
+        push!(bounds, norm(x_prev-x_true));
+
+
+        while iter <= k_max && norm(A*x-b) <= res_tol
+
+                push!(errs, norm(x_prev - x_true));
+
                 for i = 1:n
                         sum_aij_xj = 0;
 
                         for j = 1:n
-                                if j == i
-                                        continue;
-                                else
+                                if j !== i
                                         sum_aij_xj += A[i,j]*x_prev[j];
                                 end
                         end
@@ -157,9 +180,14 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 
                 end
 
-                x_prev = x;
+                x_prev = copy(x);
+
+                iter+=1;
+
+                push!(bounds, G*bounds[iter]);
 
         end
+
 
 
     	return x, errs, bounds
