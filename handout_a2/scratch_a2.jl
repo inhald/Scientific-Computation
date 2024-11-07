@@ -41,8 +41,9 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 
 	G = M\N;
 
+	cur_bound = x_prev-x_true;
 	
-	push!(bounds, norm(x_prev-x_true));
+	push!(bounds, norm(cur_bound));
 
 	
 	while iter <= k_max && norm(A*x-b) >= res_tol
@@ -65,8 +66,10 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 		x_prev = copy(x);
 
 		iter+=1; 
+		
+		cur_bound = G*cur_bound;
 
-		push!(bounds, G*bounds[iter]);
+		push!(bounds, norm(cur_bound));
 
 	end
 
