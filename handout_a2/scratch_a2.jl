@@ -1,5 +1,81 @@
 using LinearAlgebra
 
+
+"""
+Solve Ax=b iteratively using the Gauss-Seidel method with initial iteration x0.
+
+Inputs:
+    A: nxn real matrix
+    b: n-element real vector
+    x0: initial iteration
+    x_true: ground-truth value used to compute output errs
+    k_max: maximum number of iterations
+    res_tol: residual error tolerance criterion; terminate once norm(A*x - b) <= res_tol
+Outputs:
+    x: n-element real vector containing the solution returned by the Gauss-Seidel method
+    errs: vector of k+1 Euclidean norm error values, where k is the number of
+          iterations performed. The i-th element errs[i] contains the absolute error
+          in x after i-1 iterations of the Gauss-Seidel method have been performed (e.g.,
+          errs[1] contains norm(x0 - x_true)).
+    bounds: upper bound on errs computed using the convergence theory discussed in lecture.
+"""
+function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
+
+	n = size(A,1);
+	x_prev = copy(x0);
+	iter  = 0;
+	x = Vector{Float64}(undef,n);
+
+	err = Float64[];
+	bounds = Float64[];
+
+
+
+
+	while iter <= k_max && norm(A*x - b) >= res_tol
+
+
+		for i=1:n
+			#cur sum
+			cur_elem_sum = 0;
+
+			for j =1:i-1
+				cur_elem_sum += A[i,j] * x[j];
+
+			end
+
+			#prev sum 
+			cur_prev_sum = 0;
+
+
+			for j=i+1:n
+				cur_prev_sum += A[i,j]*x_prev[j];			
+
+			end
+
+			x[i] = (b[i] - cur_elem_sum - cur_prev_sum)/(A[i,i]);
+
+
+			
+
+		end
+
+		push!(err, norm(x-x_prev));
+
+		x_prev = copy(x);
+		iter+=1; 
+
+
+
+
+	end
+
+
+
+    	return x
+end
+
+
 """
 Solve Ax=b iteratively using the Jacobi method with initial iteration x0. 
 
@@ -185,6 +261,8 @@ k_max = 25
 
 # Solve using the corrected Jacobi method
 x, err, bounds = jacobi_method(A, b, x0, A\b,  k_max, 1e-6);
+
+x = gauss_seidel(A,b,x0, A\b, k_max, 1e-6);
 
 iter = 0; 
 
