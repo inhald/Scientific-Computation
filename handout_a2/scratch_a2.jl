@@ -26,9 +26,26 @@ function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 	iter  = 0;
 	x = Vector{Float64}(undef,n);
 
-	err = Float64[];
+	errs = Float64[];
 	bounds = Float64[];
 
+	M = Matrix{Float64}(I,n,n);
+
+        #finding G matrix
+
+        for i = 1:n
+                M[i,i] = A[i,i];
+        end
+
+	N = M - A;
+
+        G = M\N;
+
+		
+	cur_bound = x_prev-x_true;
+
+        push!(bounds, norm(cur_bound));
+	
 
 
 
@@ -60,19 +77,23 @@ function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 
 		end
 
-		push!(err, norm(x-x_prev));
+		push!(errs, norm(x-x_prev));
 
 		x_prev = copy(x);
 		iter+=1; 
+
+
+		cur_bound = G*cur_bound;
+
+                push!(bounds, norm(cur_bound));
+
 
 
 
 
 	end
 
-
-
-    	return x
+    	return x, errs, bounds; 
 end
 
 
@@ -150,7 +171,7 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 	end
 
 
-    	return x, errs, bounds; 
+   	return x, errs, bounds; 
 end
 
 

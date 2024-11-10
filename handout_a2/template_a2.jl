@@ -139,7 +139,7 @@ Outputs:
 function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 
 
-	n = size(A,1);
+        n = size(A,1);
         x = Vector{Float64}(undef,n);
         errs = Float64[];
         x_prev = copy(x0);
@@ -160,10 +160,12 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 
         G = M\N;
 
-        push!(bounds, norm(x_prev-x_true));
+        cur_bound = norm(x_prev-x_true);
+
+        push!(bounds, cur_bound);
 
 
-        while iter <= k_max && norm(A*x-b) <= res_tol
+        while iter < k_max && norm(A*x-b) >= res_tol
 
                 push!(errs, norm(x_prev - x_true));
 
@@ -184,13 +186,16 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 
                 iter+=1;
 
-                push!(bounds, G*bounds[iter]);
+                cur_bound = norm(G)*cur_bound;
+
+                push!(bounds, cur_bound);
 
         end
 
 
+        return x, errs, bounds;
 
-    	return x, errs, bounds
+
 end
 
 """
@@ -212,7 +217,82 @@ Outputs:
     bounds: upper bound on errs computed using the convergence theory discussed in lecture. 
 """
 function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
-    return x, errs, bounds
+	n = size(A,1);
+        x_prev = copy(x0);
+        iter  = 0;
+        x = Vector{Float64}(undef,n);
+
+        errs = Float64[];
+        bounds = Float64[];
+
+        N = zeros(Float64,n,n);
+        M = Matrix{Float64}(I,n,n);
+
+        #finding G matrix
+
+        for i = 1:n
+                for j=1:n
+                        if j > i
+                        N[i,j] = -A[i,j];
+                        end
+                end
+        end
+
+        M = N + A;
+
+        G = M\N;
+
+
+        cur_bound = norm(x_prev-x_true);
+
+        push!(bounds, cur_bound);
+
+
+
+
+        while iter <= k_max && norm(A*x - b) >= res_tol
+
+
+                for i=1:n
+                        #cur sum
+                        cur_elem_sum = 0;
+
+                        for j =1:i-1
+                                cur_elem_sum += A[i,j] * x[j];
+
+                        end
+
+                        #prev sum
+                        cur_prev_sum = 0;
+
+
+                        for j=i+1:n
+                                cur_prev_sum += A[i,j]*x_prev[j];
+
+                        end
+
+                        x[i] = (b[i] - cur_elem_sum - cur_prev_sum)/(A[i,i]);
+
+
+
+
+                end
+
+                push!(errs, norm(x-x_true));
+
+                x_prev = copy(x);
+                iter+=1;
+
+
+                cur_bound = norm(G)*cur_bound;
+
+                push!(bounds, cur_bound);
+
+
+        end
+
+        return x, errs, bounds;
+
 end
 
 

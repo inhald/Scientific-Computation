@@ -34,3 +34,6 @@ hline!([res_ldl], yaxis=:log, label="LDL' Reference", color=:blue)
 title!("Convergence of Iterative Methods")
 xaxis!("Iteration")
 yaxis!("Absolute Error")
+
+
+savefig("Results.png");
