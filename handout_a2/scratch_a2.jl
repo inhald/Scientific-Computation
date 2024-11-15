@@ -1,6 +1,38 @@
 using LinearAlgebra
 
 
+function power_method(A, tol)
+	n = size(A,1);
+	v = ones(n);
+
+	lambda = 1; 
+	r = A*v - lambda*v;
+
+	#for symmetric matrices, the bound evaluates to ||r||_2 /||x||_2
+	bound = norm(r)/(norm(v));
+	
+	while bound >= tol 
+		
+		v_tilde = v/norm(v);
+		v = A*v_tilde;
+
+		lambda = v[1]/v_tilde[1]; 
+
+		r = A*v - lambda*v;
+		
+		bound = norm(r)/norm(v);
+
+
+	end
+
+	println(lambda);
+	println(r);
+
+
+end
+
+
+
 """
 Solve Ax=b iteratively using the Gauss-Seidel method with initial iteration x0.
 
@@ -292,6 +324,22 @@ iter+=1;
 #println(iter);
 
 
-println("Solution x: ", x)
+#v = power_method();
 
-println("Solution x*: ", A\b);
+#println(v);
+
+
+# Test matrix (symmetric and positive-definite, for convergence guarantees)
+A = [4 1;
+     1 3]
+
+# Tolerance level
+tol = 1e-12;
+
+# Call the function
+power_method(A, tol);
+
+println("sol:", eigvals(A));
+#println("Solution x: ", x)
+
+#println("Solution x*: ", A\b);

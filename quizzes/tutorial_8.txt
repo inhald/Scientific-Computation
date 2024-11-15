@@ -1,0 +1,21 @@
+Interpolation
+
+
+
+Monomial Interpolation:
+	-To interpolate, create vandermonde matrix
+	-then solve vand \ b
+	-If you have deg n polynomial, then you need n+1 x n+1 size vandermonde matrix
+
+Lagrange Interpolation:
+
+
+Newton Interpolation:
+	-used divided differences to build table
+	-use coefficients on the diagonal of the table
+
+Cubic Hermite Spline Interpolation:
+	-Interpolate between consecutive points linearly
+	-we want smooth behaviour for second behaviour, so we add a few more constraints
+	-this is a lot more expensive and it is underdetermined system
+	-hermite functions can resolve this issue

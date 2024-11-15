@@ -18,6 +18,7 @@ x_jac, errs_jac, bounds_jac = jacobi_method(A, b, x0, x_true, k_max, res_tol)
 jac_iters = 1:length(errs_jac)
 x_gs, errs_gs, bounds_gs = gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 gs_iters = 1:length(errs_gs)
+println(eps(x_jac[1]));
 
 L, d = ldl_decomposition(A)
 x_ldl = ldl_solve(L, d, b)
