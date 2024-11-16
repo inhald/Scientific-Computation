@@ -19,6 +19,23 @@ n = 100
 A test implementation of the LU decomposition without pivoting. 
 Your LDL decomposition should be significantly faster than this! 
 """
+
+
+function compute_fx(x,p,d,n)
+
+
+        result = zeros(n);
+
+        for i = 1:n
+
+                result[i] = norm(x .- p[:,i]) - d[i];
+
+        end
+
+        return result;
+
+end
+
 function lu_decomposition(A)
     n = size(A, 1)
     A_out = copy(A)
@@ -122,7 +139,7 @@ for _ in 1:n_trials
     P = rand(3, 3)*10.0 .- 5.0
     d = [norm(x_gt - P[:, i]) for i in 1:size(P, 2)]
     x_trace = newton(x0, P, d, newton_tol, 100)
-    global score_newton += (norm(x_trace[end] - x_gt) <= newton_tol)
+    global score_newton += (norm(compute_fx(x_trace[end],P,d,size(P,1))) <= newton_tol) #(norm(x_trace[end] - x_gt) <= newton_tol)
 end
 score_newton = Int(round(score_newton/5.0))
 println("Problem 8 score: $(score_newton)/10")

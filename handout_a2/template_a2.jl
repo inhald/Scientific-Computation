@@ -356,7 +356,28 @@ Outputs:
 
 """
 function extremal_eigenpairs(A, k, tol)
-    return λ, V
+	n = size(A,1);
+        lambda_vect = Vector{Float64}(undef,k);
+        V = Matrix{Float64}(undef,n,k);
+
+        A_mod = copy(A);
+
+        for i=1:k
+                lambda, eigvect = power_method_symmetric(A_mod,tol);
+                lambda_vect[i] = lambda;
+
+                V[:,i] = eigvect;
+
+
+
+                A_mod -= lambda*eigvect*transpose(eigvect);
+
+        end
+
+
+        return lambda_vect, V;
+
+
 end
 
 """
@@ -374,9 +395,87 @@ Returns:
     x_trace: Vector{Vector{Float64}} containing each Newton iterate x_k in R^n. 
 
 """
-function newton(x0, P, d, tol, max_iters)
-    return x_trace
+
+function compute_jacobian(x,p,n)
+
+
+        J = zeros(n,n);
+
+
+        for i = 1:n
+
+
+                for j = 1:n
+
+                        J[i,j] = (x[j] - p[j,i])/norm(x .- p[:,i]);
+
+                end
+
+        end
+
+        return J;
+
+
 end
+
+function compute_fx(x,p,d,n)
+
+
+        result = zeros(n);
+
+        for i = 1:n
+
+                result[i] = norm(x .- p[:,i]) - d[i];
+
+        end
+
+        return result;
+
+end
+
+
+
+function newton(x0, P, d, tol, max_iters)
+
+        n = size(P,1);
+        x_trace = Vector{Vector{Float64}}();
+
+        k = 0;
+
+        x = copy(x0);
+
+        fx_k = ones(n);
+
+
+        #Jacobian
+
+        while k <= max_iters && norm(fx_k) >= tol
+
+                J = compute_jacobian(x,P,n);
+
+                fx_k = compute_fx(x,P,d,n);
+
+
+                s = J \ -fx_k;
+
+                x += s;
+
+                push!(x_trace, copy(x));
+
+                k+=1;
+
+        end
+
+
+        return x_trace
+end
+
+
+
+
+#function newton(x0, P, d, tol, max_iters)
+    #return x_trace
+#end
 
 """
 Use Newton's method to solve the nonlinear optimization problem described in Problems 9-10.
@@ -395,5 +494,6 @@ Returns:
 
 """
 function newton_optimizer(x0, P, d, tol, max_iters)
+
     return x_trace
 end
