@@ -1,6 +1,6 @@
 using Plots
 
-include("firstname_lastname_a2.jl")
+include("template_a2.jl")
 
 # Fixed 2D anchor positions
 P = [0.0 0.0 100.0 100.0;
@@ -45,3 +45,5 @@ plot!(x1, x2, label="Newton Iterations", marker=:o, color=:white)
 scatter!([x_gt[1]], [x_gt[2]], label="Ground Truth", marker=:x, color=:red, markersize=9)
 scatter!(P[1, :], P[2, :], label="Beacons")
 title!("log10 of Cost")
+
+savefig("newton_results.png");

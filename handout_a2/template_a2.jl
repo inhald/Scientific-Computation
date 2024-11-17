@@ -16,14 +16,16 @@ Outputs:
 """
 function ldl_decomposition(A)
 
+	#initializing
 	n = size(A,1);
         d = Vector{Float64}(undef,n);
         L = Matrix{Float64}(I,n,n);
 
         d[1] = A[1,1];
-
+	
         for j = 1:n-1
-
+		
+		#computing each coefficent of L
                 for i = j+1:n
 
                         sum_ldl = 0;
@@ -37,6 +39,8 @@ function ldl_decomposition(A)
                 end
 
                 sum_dl = 0;
+
+		#computing each coeffient of D
 
                 for k=1:j
 
@@ -139,6 +143,7 @@ Outputs:
 function jacobi_method(A, b, x0, x_true, k_max, res_tol)
 
 
+	#init
         n = size(A,1);
         x = Vector{Float64}(undef,n);
         errs = Float64[];
@@ -163,12 +168,16 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
         cur_bound = norm(x_prev-x_true);
 
         push!(bounds, cur_bound);
-
-
+	
+	
+	
         while iter < k_max && norm(A*x-b) >= res_tol
 
-                push!(errs, norm(x_prev - x_true));
+		#updating error
 
+                push!(errs, norm(x_prev - x_true));
+		
+		#jacobi method for finding sol x
                 for i = 1:n
                         sum_aij_xj = 0;
 
@@ -181,6 +190,8 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
                         x[i] = (b[i] - sum_aij_xj)/A[i,i];
 
                 end
+
+		#updating bound
 
                 x_prev = copy(x);
 
@@ -217,6 +228,8 @@ Outputs:
     bounds: upper bound on errs computed using the convergence theory discussed in lecture. 
 """
 function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
+
+	#init
 	n = size(A,1);
         x_prev = copy(x0);
         iter  = 0;
@@ -249,7 +262,6 @@ function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 
 
 
-
         while iter <= k_max && norm(A*x - b) >= res_tol
 
 
@@ -271,6 +283,8 @@ function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 
                         end
 
+			#finding xi
+
                         x[i] = (b[i] - cur_elem_sum - cur_prev_sum)/(A[i,i]);
 
 
@@ -278,12 +292,15 @@ function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 
                 end
 
+		#updating error
+
                 push!(errs, norm(x-x_true));
 
                 x_prev = copy(x);
                 iter+=1;
 
 
+		#updating bound
                 cur_bound = norm(G)*cur_bound;
 
                 push!(bounds, cur_bound);
@@ -312,6 +329,7 @@ Outputs:
 """
 function power_method_symmetric(A, tol)
 
+	#init
         n = size(A,1);
         v = ones(n);
 
@@ -321,12 +339,17 @@ function power_method_symmetric(A, tol)
         #for symmetric matrices, the bound evaluates to ||r||_2 /||x||_2
         bound = norm(r)/(norm(v));
 
+	#applying power method until bound is below tol
         while bound >= tol
+
+		#applying power method
 
                 v_tilde = v/norm(v);
                 v = A*v_tilde;
 
                 lambda = v[1]/v_tilde[1];
+
+		#updating bound
 
                 r = A*v - lambda*v;
 
@@ -356,11 +379,15 @@ Outputs:
 
 """
 function extremal_eigenpairs(A, k, tol)
+
+	#init
 	n = size(A,1);
         lambda_vect = Vector{Float64}(undef,k);
         V = Matrix{Float64}(undef,n,k);
 
         A_mod = copy(A);
+
+	#applying derived methodology
 
         for i=1:k
                 lambda, eigvect = power_method_symmetric(A_mod,tol);
@@ -397,10 +424,12 @@ Returns:
 """
 
 function compute_jacobian(x,p,n)
-
+	
+	#helper function to compute jacobian at each iteration
 
         J = zeros(n,n);
-
+	
+	#using derived result
 
         for i = 1:n
 
@@ -420,8 +449,12 @@ end
 
 function compute_fx(x,p,d,n)
 
+	#helper function to compute fx at each iteration
+
 
         result = zeros(n);
+
+	#using derived result
 
         for i = 1:n
 
@@ -436,6 +469,8 @@ end
 
 
 function newton(x0, P, d, tol, max_iters)
+
+	#init
 
         n = size(P,1);
         x_trace = Vector{Vector{Float64}}();
@@ -456,9 +491,12 @@ function newton(x0, P, d, tol, max_iters)
                 fx_k = compute_fx(x,P,d,n);
 
 
+		#updating x
                 s = J \ -fx_k;
 
                 x += s;
+
+		#pushing to x_trace vector
 
                 push!(x_trace, copy(x));
 
@@ -470,12 +508,6 @@ function newton(x0, P, d, tol, max_iters)
         return x_trace
 end
 
-
-
-
-#function newton(x0, P, d, tol, max_iters)
-    #return x_trace
-#end
 
 """
 Use Newton's method to solve the nonlinear optimization problem described in Problems 9-10.
@@ -493,7 +525,109 @@ Returns:
     x_trace: Vector{Vector{Float64}} containing each Newton iterate x_k in R^n. 
 
 """
+function compute_gradf(x, P, d)
+
+	#helper function to compute grad f
+
+        m = size(P)[2];
+        n = size(P)[1];
+
+        grad_f = zeros(n);
+
+	#using derived result
+
+
+        for i = 1:m
+                diff = x .- P[:,i];
+                dist = norm(diff);
+                f_i = dist - d[i];
+
+                grad_f .+= 2 * f_i * (diff/dist);
+
+
+        end
+
+
+        return grad_f;
+
+end
+
+
+function compute_hessian(x,P,d)
+
+	#helper function to compute hessian
+
+        m = size(P)[2];
+        n = size(P)[1];
+
+        grad_gradf = zeros(n,n);
+
+
+
+	#using derived result
+        for i = 1:m
+
+                diff = x .- P[:,i];
+                dist = norm(diff);
+                f_i = dist - d[i];
+
+                grad_gradf .+=  2*((diff * diff')/dist^2  + f_i * (I/dist  - (diff*diff')/(dist)^3) );
+
+        end
+
+
+        return grad_gradf;
+
+
+
+end
+
+
+
 function newton_optimizer(x0, P, d, tol, max_iters)
 
-    return x_trace
+	#init
+
+        m = size(P)[2];
+        n = size(P)[1];
+
+        x_trace = Vector{Vector{Float64}}();
+
+        k = 0;
+
+
+        x = copy(x0);
+
+        grad_f = ones(n);
+
+        while k <= max_iters && norm(grad_f) >= tol
+
+                grad_f = compute_gradf(x,P,d);
+
+                grad_gradf = compute_hessian(x,P,d);
+
+		#updating x
+
+
+                s = grad_gradf \ -grad_f;
+
+                x += s;
+
+		#pushing to x_trace
+
+                push!(x_trace, copy(x));
+
+
+                k +=1;
+
+        end
+
+	#printing
+
+	println("grad_f(x*) is:", compute_gradf(x, P,d));
+	println("grad_gradf(x*) is:", compute_hessian(x,P,d));
+	println("Eigenvalues of grad_gradf(x*) are:", eigvals(compute_hessian(x,P,d)));
+
+        return x_trace
+
 end
