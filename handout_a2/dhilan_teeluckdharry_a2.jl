@@ -1,5 +1,77 @@
 using LinearAlgebra
 
+
+
+"""
+Helper
+
+"""
+function gaussian_elimination(A, b)
+    n = size(A,1);
+
+    #Copying matrices to output variables
+    Aout = copy(A);
+    bout = copy(b);
+
+
+    for k in 1:n-1
+        for i in k+1:n
+
+            #calculate the multiplier between pivot
+            #and subsequent rows
+            m_ik = Aout[i,k]/Aout[k,k];
+
+            #we can set this to zero to 
+            #reduce influence of cancellation
+            Aout[i,k] = 0.0;
+
+            #perform the row operation by substracting
+            #row i by m_ik * row k 
+            for j in k+1:n
+
+               Aout[i,j] -= m_ik*Aout[k,j];
+
+            end
+            #update b_out as well
+            bout[i] -= m_ik*bout[k];
+        end
+    end
+
+
+    #return Aout and bout after GE
+    return Aout, bout;
+
+end
+
+
+function backward_substitution(U, b)
+    #defining solution vector x
+    x = Vector{Float64}(undef, size(U,1));
+    n = size(U,1);
+
+    #for efficiency, x_n is calculated in O(1) here
+    x[n] = b[n]/U[n,n];
+
+
+    #back substitution algorithm
+    for k in n-1:-1:1
+        row_sum = 0;
+        for i in n:-1:k+1
+            #using subsequent values x_{k+1}, ... x_n
+            #to calculate sum (u_i x_i ) for i > k
+            row_sum += U[k,i]*x[i];
+
+        end
+        #calculating x_k
+        x[k] = (b[k] - row_sum)/(U[k,k]);
+
+    end
+
+    #returning x
+    return x;
+end
+
+
 """
 Compute the LDLᵀ decomposition (without pivoting) of a full-rank symmetric matrix A.
 You may assume that A has a unique LU factorization. 
@@ -156,14 +228,27 @@ function jacobi_method(A, b, x0, x_true, k_max, res_tol)
         M = Matrix{Float64}(I,n,n);
 
         #finding G matrix
+	
+	
 
         for i = 1:n
-                M[i,i] = A[i,i];
-        end
+		M[i,i] = A[i,i];
+	end 
+	
 
-        N = M - A;
+	N = -(A-M);
 
-        G = M\N;
+        #G = M\N;
+	
+	G = zeros(Float64, n,n);
+
+	for i =1:n
+		for j=1:n
+			if i!=j
+				G[i,j] = N[i,j]/A[i,i];
+			end
+		end
+	end
 
         cur_bound = norm(x_prev-x_true);
 
@@ -227,6 +312,37 @@ Outputs:
           errs[1] contains norm(x0 - x_true)).
     bounds: upper bound on errs computed using the convergence theory discussed in lecture. 
 """
+function invert_lower(L)
+	n = size(L,1);
+	B = zeros(Float64,n,n);
+
+	
+	#loop over each row
+	for i =1:n
+		#diagonal element
+		B[i,i] = 1/L[i,i];
+
+
+		#loop over each column
+		for j = 1:i-1
+			sum = 0;
+			for k = j:i-1
+				sum += L[i,k]*B[k,j];
+			end
+			#compute off-diagonal element
+			B[i,j] = -sum*B[i,i];
+
+		end
+		
+		
+	end
+
+	return B;
+
+end
+
+
+
 function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 
 	#init
@@ -253,7 +369,14 @@ function gauss_seidel(A, b, x0, x_true, k_max, res_tol)
 
         M = N + A;
 
-        G = M\N;
+        #G = M\N;
+	
+	#G = zeros(Float64, n,n);
+	
+	M_inv = invert_lower(M);
+
+	G = M_inv * N; 
+
 
 
         cur_bound = norm(x_prev-x_true);
@@ -492,7 +615,11 @@ function newton(x0, P, d, tol, max_iters)
 
 
 		#updating x
-                s = J \ -fx_k;
+		U,b = gaussian_elimination(J,-fx_k);
+		s = backward_substitution(U,b);
+
+
+                #s = J \ -fx_k;
 
                 x += s;
 
@@ -608,6 +735,9 @@ function newton_optimizer(x0, P, d, tol, max_iters)
 
 		#updating x
 
+		L,diag = ldl_decomposition(grad_gradf);
+		
+		s = ldl_solve(L,diag,-grad_f);
 
                 s = grad_gradf \ -grad_f;
 
