@@ -35,8 +35,15 @@ Output
 """
 function chebyshev_nodes(a, b, ω, tol)
 
-	n=subdivide(a,b,ω,tol);
 
+
+	#finding n 
+	
+
+
+	
+
+	
 
 
 
