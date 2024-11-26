@@ -157,7 +157,16 @@ Inputs:
     r: number of subintervals
 """
 function composite_trapezoidal_rule(f, a, b, r)
-    return approximate_integral
+
+	h = (b-a)/r; 
+	approximate_integral = h/2*(f(a)+f(b));
+
+	for i = 1:r-1
+		approximate_integral = approximate_integral + h*f(a+h*i);
+	end
+
+
+    	return approximate_integral
 end
 
 """
@@ -172,7 +181,21 @@ Inputs:
     r: number of subintervals
 """
 function composite_midpoint_rule(f, a, b, r)
-    return approximate_integral
+	h = (b-a)/r; 
+
+	approximate_integral = 0;
+
+	for i = 1:r
+		approximate_integral = approximate_integral + f(a+h*i-h/2);
+
+	end
+
+	approximate_integral = approximate_integral*h;
+
+
+
+
+    	return approximate_integral
 end
 
 """
