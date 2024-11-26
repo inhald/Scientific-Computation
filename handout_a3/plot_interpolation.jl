@@ -1,7 +1,7 @@
 using Plots
 
 # Include your completed code
-include("firstname_lastname_a3.jl")
+include("template_a3.jl")
 
 # Problem parameters
 ω = 2.0
@@ -29,3 +29,4 @@ scatter!(x_data, zeros(length(x_data)), label="Evenly-spaced Nodes", markercolor
 plot!(x, abs.(p_cheb .- cos.(ω*x)), label="Chebyshev Interpolation Error", color=:green)
 scatter!(x_cheb, zeros(length(x_cheb)), label="Chebyshev Nodes", markercolor=:green)
 hline!([tol], label="Tolerance", color=:black, linestyle=:dash)
+savefig("chebyshev2.png");
