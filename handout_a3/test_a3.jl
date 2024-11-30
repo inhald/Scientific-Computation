@@ -93,18 +93,18 @@ true_int = f_int(b) - f_int(a)
 r = 2048
 int_trap = composite_trapezoidal_rule(f, a, b, r)
 int_mid = composite_midpoint_rule(f, a, b, r)
-#int_simpson = composite_simpsons_rule(f, a, b, r)
+int_simpson = composite_simpsons_rule(f, a, b, r)
 
 tol_composite = 1e-5
 score_trap = (abs(int_trap - true_int) <= 1e-5)*5
 score_mid = (abs(int_mid - true_int) <= 1e-5)*5
-#score_simpson = (abs(int_simpson - true_int) <= 1e-5)*5
+score_simpson = (abs(int_simpson - true_int) <= 1e-5)*5
 
 println("Score for the composite trapezoidal rule: $(score_trap)/5")
 println("Score for the composite midpoint rule: $(score_mid)/5")
-#println("Score for the composite Simpson's rule: $(score_simpson)/5")
+println("Score for the composite Simpson's rule: $(score_simpson)/5")
 
-println("Preliminary score for Problem 1: $(score_trap+score_mid)/15")
+println("Preliminary score for Problem 1: $(score_trap+score_mid+score_simpson)/15")
 
 # Test the adaptive Simpson's rule
 f(x) = cos(x)

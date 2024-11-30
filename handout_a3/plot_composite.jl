@@ -1,7 +1,7 @@
 using Plots
 
 # Include your completed code
-include("firstname_lastname_a3.jl")
+include("template_a3.jl")
 
 # Define the function and bounds for our integral
 f(x) = exp(-x/2)*sin(x)
@@ -19,6 +19,9 @@ int_trap = [composite_trapezoidal_rule(f, a, b, r[i]) for i in eachindex(r)]
 int_mid = [composite_midpoint_rule(f, a, b, r[i]) for i in eachindex(r)]
 int_simpson = [composite_simpsons_rule(f, a, b, r[i]) for i in eachindex(r)]
 
+#println(int_simpson);
+
+
 # Plot the results on log axes
 plot(h, abs.(int_trap .- true_int), label="Trapezoid", marker=:o, 
      yaxis=:log10, xaxis=:log10, legend=:topleft)
@@ -27,3 +30,4 @@ plot!(h, abs.(int_simpson .- true_int), label="Simpson", marker=:s)
 title!("Error of Composite Quadrature Rules")
 xaxis!("h")
 yaxis!("error")
+savefig("plot_composite.png");

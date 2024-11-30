@@ -213,7 +213,25 @@ Inputs:
     r: even number of subintervals
 """
 function composite_simpsons_rule(f, a, b, r)
-    return approximate_integral
+
+
+	approximate_integral = (f(a)+f(b));
+	h = (b-a)/r;
+
+
+	for i = 2:2:(r-2)
+		xi = a+i*h;
+		approximate_integral += 2*f(xi);
+	end
+
+	for i= 1:2:(r-1)
+		xi= a + i*h
+		approximate_integral +=  4*f(xi);
+	end
+
+	approximate_integral = approximate_integral * (h/3);
+	
+    	return approximate_integral
 end
 
 """
@@ -233,6 +251,65 @@ Returns:
     approximate_integral: the value of the integral ∫f(x)dx over [a, b]
     x: vector containing the nodes which the algorithm used to compute approximate_integral
 """
+
+function recursive_asr(f, a, b, tol, fa, fm, fb, depth, max_depth, x_values)
+    m = (a + b)/2
+    h = b - a
+
+    # Compute Simpson's approximation over [a, b]
+    S = h/6 * (fa + 4*fm + fb)
+
+    # Compute points and function values for left and right halves
+    left_m = (a + m)/2
+    right_m = (m + b)/2
+
+    flm = f(left_m)
+    frm = f(right_m)
+
+    # Add new nodes
+    push!(x_values, left_m)
+    push!(x_values, right_m)
+
+    # Simpson's rule over [a, m] and [m, b]
+    S_left = h/12 * (fa + 4*flm + fm)
+    S_right = h/12 * (fm + 4*frm + fb)
+
+    S2 = S_left + S_right
+
+    # Error estimate
+    if depth >= max_depth || abs(S2 - S)/15 <= tol
+        # Accept the approximation
+        return S2
+    else
+        # Recurse on [a, m] and [m, b]
+        left_integral = recursive_asr(f, a, m, tol, fa, flm, fm, depth+1, max_depth, x_values)
+        right_integral = recursive_asr(f, m, b, tol, fm, frm, fb, depth+1, max_depth, x_values)
+        # Combine results
+        integral = left_integral + right_integral
+        return integral
+    end
+end
+
+
+
 function adaptive_simpsons_rule(f, a, b, tol, max_depth)
-    return approximate_integral, x
+
+	fa = f(a)
+    	fb = f(b)
+    	m = (a + b)/2
+    	fm = f(m)
+    	depth = 0
+
+    	x_values = Set{Float64}()
+    	push!(x_values, a)
+    	push!(x_values, m)
+    	push!(x_values, b)
+
+    # Call the recursive function
+    	integral = recursive_asr(f, a, b, tol, fa, fm, fb, depth, max_depth, x_values)
+
+    	x = collect(x_values)
+    	sort!(x)
+    	return integral, x
+
 end
