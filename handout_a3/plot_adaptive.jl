@@ -1,7 +1,7 @@
 using Plots
 
 # Include your completed code
-include("firstname_lastname_a3.jl")
+include("template_a3.jl")
 
 # Define the integrand parameterized by k and the integral's bounds
 f_pendulum(x, k) = 1/(sqrt(1 - k^2*sin(x)^2))
@@ -36,6 +36,7 @@ title!("Comparing Adaptive and Composite Rules")
 xaxis!("k")
 yaxis!("T(k)")
 display(p1)
+savefig("adaptive.png")
 
 # Next, investigate the distribution of points (nodes) for k=0.99
 f(x) = f_pendulum(x, 0.99)
@@ -49,3 +50,4 @@ x_plot = range(a, stop=b, length=n_plot)
 plot(x_plot, f.(x_plot), label="Integrand")
 scatter!(x_adapt, zeros(length(x_adapt)), label="Adaptive Nodes")
 scatter!(x_comp, zeros(length(x_comp)), label="Composite Nodes", marker=:d, color=:black) 
+savefig("distribution.png");
