@@ -5,7 +5,7 @@ using Random
 Random.seed!(99991099910101010)
 rel_tol = 1e-6
 
-include("template_a3.jl")
+include("dhilan_teeluckdharry_a3.jl")
 
 # Test your implementation of Newton's form and Horner's method
 function test_newton_int()
